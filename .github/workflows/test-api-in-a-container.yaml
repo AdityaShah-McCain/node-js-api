@@ -8,14 +8,14 @@ jobs:
     services: # in github actions, we can use multiple service containers
       app: # we need to upload our image to dockerhub to use it in github actions # container no 1
         image: alialaa17/simple-node-api
-        ports:
-          - 3001:3000
+        # ports: # this is not needed when we run our job in a container as docker will automatically expose all ports between all containers in the same network
+        #   - 3001:3000 # our host machine: port in our container
         env:
           MONGO_HOSTNAME: mongo # mongo here is the service name we defined below
       mongo: # container no 2
         image: mongo # image that exists in dockerhub
-        ports:
-          - 27017:27017
+        # ports: # this is not needed when we run our job in a container
+        #   - 27017:27017
     steps: # our steps will run in this ubuntu:20.04 (container)
       - name: Install curl
         run: |
@@ -24,7 +24,7 @@ jobs:
       - name: Dump Services Context
         run: echo '${{ toJson(job.services) }}'
       # now we are going to communicate with our service by exposing a port
-      - name: Post a user
-        run: 'curl -X POST http://localhost:3001/api/users -H ''Content-Type: application/json'' -d ''{"username": "hello","address": "dwded"}'''
+      - name: Post a user # app (service name) instead of localhost here, the port our app is listening to is 3000
+        run: 'curl -X POST http://app:3000/api/users -H ''Content-Type: application/json'' -d ''{"username": "hello","address": "dwded"}'''
       - name: Get Users
-        run: curl http://localhost:3001/api/users
+        run: curl http://app:3000/api/users
