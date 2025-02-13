@@ -1,10 +1,10 @@
 name: Test API
-# on: [push, workflow_dispatch]
-on: [workflow_dispatch]
+on: [push, workflow_dispatch]
 
 jobs:
   test-api:
     runs-on: ubuntu-latest
+    container: ubuntu:20.04 # we need to install curl here (it was already installed on our runner machine but won't be in our container)
     services: # in github actions, we can use multiple service containers
       app: # we need to upload our image to dockerhub to use it in github actions # container no 1
         image: alialaa17/simple-node-api
@@ -16,7 +16,11 @@ jobs:
         image: mongo # image that exists in dockerhub
         ports:
           - 27017:27017
-    steps: # these steps will directly run on the runner machine, these services are containers running in our host machine
+    steps: # our steps will run in this ubuntu:20.04 (container)
+      - name: Install curl
+        run: |
+          apt-get -y update
+          apt-get -y install curl
       - name: Dump Services Context
         run: echo '${{ toJson(job.services) }}'
       # now we are going to communicate with our service by exposing a port
